@@ -1,8 +1,8 @@
 from src.BaseDataTable import BaseDataTable
 import pymysql
 
-class RDBDataTable(BaseDataTable):
 
+class RDBDataTable(BaseDataTable):
     """
     The implementation classes (XXXDataTable) for CSV database, relational, etc. with extend the
     base class and implement the abstract methods.
@@ -85,7 +85,3 @@ class RDBDataTable(BaseDataTable):
 
     def get_rows(self):
         return self._rows
-
-
-
-

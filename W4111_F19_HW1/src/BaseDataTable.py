@@ -2,12 +2,7 @@
 # Do not worry about understanding abstract base classes. This is just a class that defines
 # some methods that subclasses must implement.
 from abc import ABC, abstractmethod
-import csv
 import logging
-
-#from tests.unit_test import *
-
-#from tests.unit_test import load_csv
 
 
 class BaseDataTable(ABC):
