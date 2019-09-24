@@ -182,6 +182,7 @@ class CSVDataTable(BaseDataTable):
                     for k, v in template.items():
                         update_row[k]=new_values[k]
                     result.append(update_row)
+
                     no_updated_rows += 1
                 else:
                     result.append(row)

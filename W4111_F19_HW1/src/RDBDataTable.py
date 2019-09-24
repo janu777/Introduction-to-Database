@@ -1,5 +1,12 @@
 from src.BaseDataTable import BaseDataTable
+import src.dbutils as dbutils
 import pymysql
+import json
+import pandas as pd
+from src.dbutils import run_q, create_select, create_delete, get_connection
+
+pd.set_option("display.width", 196)
+pd.set_option('display.max_columns', 16)
 
 
 class RDBDataTable(BaseDataTable):
@@ -15,7 +22,48 @@ class RDBDataTable(BaseDataTable):
         :param connect_info: Dictionary of parameters necessary to connect to the data.
         :param key_columns: List, in order, of the columns (fields) that comprise the primary key.
         """
-        pass
+        if table_name is None or connect_info is None:
+            raise ValueError("Invalid input.")
+
+        self._data = {
+            "table_name": table_name,
+            "connect_info": connect_info,
+            "key_columns": key_columns
+        }
+
+        cnx = dbutils.get_connection(connect_info)
+        if cnx is not None:
+            self._cnx = cnx
+        else:
+            raise Exception("Could not get a connection.")
+
+    def __str__(self):
+
+        result = "RDBDataTable:\n"
+        result += json.dumps(self._data, indent=2)
+
+        row_count = self.get_row_count()
+        result += "\nNumber of rows = " + str(row_count)
+
+        some_rows = pd.read_sql(
+            "select * from " + self._data["table_name"] + " limit 10",
+            con=self._cnx
+        )
+        result += "First 10 rows = \n"
+        result += str(some_rows)
+
+        return result
+
+    def get_row_count(self):
+
+        row_count = self._data.get("row_count", None)
+        if row_count is None:
+            sql = "select count(*) as count from " + self._data["table_name"]
+            res, d = dbutils.run_q(sql, args=None, fetch=True, conn=self._cnx, commit=True)
+            row_count = d[0][0]
+            self._data['"row_count'] = row_count
+
+        return row_count
 
     def find_by_primary_key(self, key_fields, field_list=None):
         """
@@ -25,11 +73,24 @@ class RDBDataTable(BaseDataTable):
         :return: None, or a dictionary containing the requested fields for the record identified
             by the key.
         """
-        pass
+        table_name = self._data['connect_info']['db']+'.'+self._data['table_name']
+        template = dict(zip(self._data['key_columns'],key_fields))
+        if field_list:
+            sql, args = create_select(table_name, template, field_list)
+        else:
+            sql, args = create_select(table_name, template, '*')
+        print("SQL = ", sql, ", args = ", args)
+        result = run_q(sql,args, conn=get_connection(self._data['connect_info']))
+        print("Return code = ", result[0])
+        print("Data = ")
+        if result[1] is not None:
+            print(json.dumps(result[1], indent=2))
+        else:
+            print("None.")
+        return result
 
     def find_by_template(self, template, field_list=None, limit=None, offset=None, order_by=None):
         """
-
         :param template: A dictionary of the form { "field1" : value1, "field2": value2, ...}
         :param field_list: A list of request fields of the form, ['fielda', 'fieldb', ...]
         :param limit: Do not worry about this for now.
@@ -38,7 +99,20 @@ class RDBDataTable(BaseDataTable):
         :return: A list containing dictionaries. A dictionary is in the list representing each record
             that matches the template. The dictionary only contains the requested fields.
         """
-        pass
+        table_name = self._data['connect_info']['db'] + '.' + self._data['table_name']
+        if field_list:
+            sql, args = create_select(table_name, template, field_list)
+        else:
+            sql, args = create_select(table_name, template, '*')
+        print("SQL = ", sql, ", args = ", args)
+        result = run_q(sql, args, conn=get_connection(self._data['connect_info']))
+        print("Return code = ", result[0])
+        print("Data = ")
+        if result[1] is not None:
+            print(json.dumps(result[1], indent=2))
+        else:
+            print("None.")
+        return result
 
     def delete_by_key(self, key_fields):
         """
@@ -48,7 +122,20 @@ class RDBDataTable(BaseDataTable):
         :param template: A template.
         :return: A count of the rows deleted.
         """
-        pass
+        no_of_rows_before = self.get_row_count()
+        table_name = self._data['connect_info']['db'] + '.' + self._data['table_name']
+        template = dict(zip(self._data['key_columns'], key_fields))
+        sql, args = create_delete(table_name, template, '*')
+        print("SQL = ", sql, ", args = ", args)
+        result = run_q(sql, args, conn=get_connection(self._data['connect_info']))
+        print("Return code = ", result[0])
+        print("Data = ")
+        if result[1] is not None:
+            print(json.dumps(result[1], indent=2))
+        else:
+            print("None.")
+        no_deleted_rows = no_of_rows_before-self.get_row_count()
+        return no_deleted_rows
 
     def delete_by_template(self, template):
         """
@@ -56,7 +143,19 @@ class RDBDataTable(BaseDataTable):
         :param template: Template to determine rows to delete.
         :return: Number of rows deleted.
         """
-        pass
+        no_of_rows_before = self.get_row_count()
+        table_name = self._data['connect_info']['db'] + '.' + self._data['table_name']
+        sql, args = create_delete(table_name, template, '*')
+        print("SQL = ", sql, ", args = ", args)
+        result = run_q(sql, args, conn=get_connection(self._data['connect_info']))
+        print("Return code = ", result[0])
+        print("Data = ")
+        if result[1] is not None:
+            print(json.dumps(result[1], indent=2))
+        else:
+            print("None.")
+        no_deleted_rows = no_of_rows_before - self.get_row_count()
+        return no_deleted_rows
 
     def update_by_key(self, key_fields, new_values):
         """
