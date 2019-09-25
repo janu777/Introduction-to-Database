@@ -36,7 +36,15 @@ def load_data():
     print("RDB table = ", r_dbt)
     return r_dbt
 r_dbt = load_data()
-result1 = r_dbt.find_by_primary_key(['aardsda01'])
-result2 = r_dbt.find_by_template(['aardsda01'])
-result3 = r_dbt.delete_by_key(['aardsda01'])
-result4 = r_dbt.delete_by_key(['aardsda01'])
+result1 = r_dbt.find_by_primary_key(['try1'])
+result2 = r_dbt.find_by_template({'birthYear':1954, 'birthState':'CA'})
+result3 = r_dbt.delete_by_key(['aaronha01'])
+result4 = r_dbt.delete_by_template({'birthYear':1954, 'birthState':'CA'})
+result5 = r_dbt.update_by_key(['abadan01'],['janane'])
+result6 = r_dbt.update_by_template({'birthYear':1954},[1996])
+result7 = r_dbt.insert({'playerID':'try1','birthYear':'1996','birthMonth':'','birthDay':'','birthCountry':'','birthState':'','birthCity':'',
+                        'deathYear':'','deathMonth':'','deathDay':'','deathCountry':'','deathState':'','deathCity':'','nameFirst':'',
+                        'nameLast':'','nameGiven':'','weight':'','height':'','bats':'',
+                        'throws':'','debut':'','finalGame':'','retroID':'','bbrefID':''})
+
+print(result1)
